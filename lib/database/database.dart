@@ -1,16 +1,12 @@
-import 'package:floor/floor.dart';
-import 'package:hive_test/dao/cart_dao.dart';
-import 'package:hive_test/entity/cart.dart';
-import 'package:sqflite/sqflite.dart' as sqflite;
 import 'dart:async';
+import 'package:floor/floor.dart';
+import 'package:hive_test/dao/product_dao.dart';
+import 'package:hive_test/entity/product.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
 
 part 'database.g.dart';
 
-// part 'database.g.dart';
-// part 'database.g.dart';
-// part 'database.g.dart';
-
-@Database(version: 1, entities: [Cart])
+@Database(version: 1, entities: [Product])
 abstract class AppDatabase extends FloorDatabase {
-  CartDAO get cartDAO;
+  ProductDao get productDao;
 }

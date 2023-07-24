@@ -61,7 +61,7 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  CartDAO? _cartDAOInstance;
+  ProductDao? _productDaoInstance;
 
   Future<sqflite.Database> open(
     String path,
@@ -85,7 +85,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Cart` (`id` INTEGER NOT NULL, `uid` TEXT NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `price` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Product` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `price` REAL NOT NULL, `description` TEXT NOT NULL, `category` TEXT NOT NULL, `image` TEXT NOT NULL, `rate` REAL NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -94,54 +94,57 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  CartDAO get cartDAO {
-    return _cartDAOInstance ??= _$CartDAO(database, changeListener);
+  ProductDao get productDao {
+    return _productDaoInstance ??= _$ProductDao(database, changeListener);
   }
 }
 
-class _$CartDAO extends CartDAO {
-  _$CartDAO(
+class _$ProductDao extends ProductDao {
+  _$ProductDao(
     this.database,
     this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database, changeListener),
-        _cartInsertionAdapter = InsertionAdapter(
+  )   : _queryAdapter = QueryAdapter(database),
+        _productInsertionAdapter = InsertionAdapter(
             database,
-            'Cart',
-            (Cart item) => <String, Object?>{
+            'Product',
+            (Product item) => <String, Object?>{
                   'id': item.id,
-                  'uid': item.uid,
-                  'name': item.name,
+                  'title': item.title,
+                  'price': item.price,
+                  'description': item.description,
                   'category': item.category,
-                  'imageUrl': item.imageUrl,
-                  'price': item.price
-                },
-            changeListener),
-        _cartUpdateAdapter = UpdateAdapter(
+                  'image': item.image,
+                  'rate': item.rate,
+                  'count': item.count
+                }),
+        _productUpdateAdapter = UpdateAdapter(
             database,
-            'Cart',
+            'Product',
             ['id'],
-            (Cart item) => <String, Object?>{
+            (Product item) => <String, Object?>{
                   'id': item.id,
-                  'uid': item.uid,
-                  'name': item.name,
+                  'title': item.title,
+                  'price': item.price,
+                  'description': item.description,
                   'category': item.category,
-                  'imageUrl': item.imageUrl,
-                  'price': item.price
-                },
-            changeListener),
-        _cartDeletionAdapter = DeletionAdapter(
+                  'image': item.image,
+                  'rate': item.rate,
+                  'count': item.count
+                }),
+        _productDeletionAdapter = DeletionAdapter(
             database,
-            'Cart',
+            'Product',
             ['id'],
-            (Cart item) => <String, Object?>{
+            (Product item) => <String, Object?>{
                   'id': item.id,
-                  'uid': item.uid,
-                  'name': item.name,
+                  'title': item.title,
+                  'price': item.price,
+                  'description': item.description,
                   'category': item.category,
-                  'imageUrl': item.imageUrl,
-                  'price': item.price
-                },
-            changeListener);
+                  'image': item.image,
+                  'rate': item.rate,
+                  'count': item.count
+                });
 
   final sqflite.DatabaseExecutor database;
 
@@ -149,73 +152,65 @@ class _$CartDAO extends CartDAO {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Cart> _cartInsertionAdapter;
+  final InsertionAdapter<Product> _productInsertionAdapter;
 
-  final UpdateAdapter<Cart> _cartUpdateAdapter;
+  final UpdateAdapter<Product> _productUpdateAdapter;
 
-  final DeletionAdapter<Cart> _cartDeletionAdapter;
+  final DeletionAdapter<Product> _productDeletionAdapter;
 
   @override
-  Stream<List<Cart>> getAllItemInCartByUid(String uid) {
-    return _queryAdapter.queryListStream('SELECT * FROM  Cart WHERE uid=?1',
-        mapper: (Map<String, Object?> row) => Cart(
-            row['id'] as int,
-            row['uid'] as String,
-            row['name'] as String,
-            row['category'] as String,
-            row['imageUrl'] as String,
-            row['price'] as String),
-        arguments: [uid],
-        queryableName: 'no_table_name',
-        isView: false);
+  Future<List<Product>> getAllProducts() async {
+    return _queryAdapter.queryList('SELECT * FROM Product',
+        mapper: (Map<String, Object?> row) => Product(
+            id: row['id'] as int,
+            title: row['title'] as String,
+            price: row['price'] as double,
+            description: row['description'] as String,
+            category: row['category'] as String,
+            image: row['image'] as String,
+            rate: row['rate'] as double,
+            count: row['count'] as int));
   }
 
   @override
-  Stream<List<Cart>> getItemInCartByUid(
-    String uid,
-    String id,
-  ) {
-    return _queryAdapter.queryListStream(
-        'SELECT * FROM  Cart WHERE uid=?1 AND id=?2',
-        mapper: (Map<String, Object?> row) => Cart(
-            row['id'] as int,
-            row['uid'] as String,
-            row['name'] as String,
-            row['category'] as String,
-            row['imageUrl'] as String,
-            row['price'] as String),
-        arguments: [uid, id],
-        queryableName: 'no_table_name',
-        isView: false);
+  Future<Product?> getProductById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Product WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => Product(
+            id: row['id'] as int,
+            title: row['title'] as String,
+            price: row['price'] as double,
+            description: row['description'] as String,
+            category: row['category'] as String,
+            image: row['image'] as String,
+            rate: row['rate'] as double,
+            count: row['count'] as int),
+        arguments: [id]);
   }
 
   @override
-  Stream<List<Cart>> clear(String uid) {
-    return _queryAdapter.queryListStream('SELECT FROM  Cart WHERE uid=?1',
-        mapper: (Map<String, Object?> row) => Cart(
-            row['id'] as int,
-            row['uid'] as String,
-            row['name'] as String,
-            row['category'] as String,
-            row['imageUrl'] as String,
-            row['price'] as String),
-        arguments: [uid],
-        queryableName: 'no_table_name',
-        isView: false);
+  Future<void> deleteAllProducts() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Product');
   }
 
   @override
-  Future<void> insertCart(Cart product) async {
-    await _cartInsertionAdapter.insert(product, OnConflictStrategy.abort);
+  Future<void> deleteProductById(int id) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM Product WHERE id = ?1', arguments: [id]);
   }
 
   @override
-  Future<void> updatecart(Cart product) async {
-    await _cartUpdateAdapter.update(product, OnConflictStrategy.abort);
+  Future<void> insertProduct(List<Product> product) async {
+    await _productInsertionAdapter.insertList(
+        product, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteCart(Cart product) async {
-    await _cartDeletionAdapter.delete(product);
+  Future<void> updateProduct(Product product) async {
+    await _productUpdateAdapter.update(product, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteProduct(Product product) async {
+    await _productDeletionAdapter.delete(product);
   }
 }
