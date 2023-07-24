@@ -11,6 +11,8 @@ abstract class ProductDao {
 
   @insert
   Future<void> insertProduct(List<Product> product);
+  @insert
+  Future<void> insertNewProduct(Product product);
 
   @update
   Future<void> updateProduct(Product product);

@@ -205,6 +205,11 @@ class _$ProductDao extends ProductDao {
   }
 
   @override
+  Future<void> insertNewProduct(Product product) async {
+    await _productInsertionAdapter.insert(product, OnConflictStrategy.abort);
+  }
+
+  @override
   Future<void> updateProduct(Product product) async {
     await _productUpdateAdapter.update(product, OnConflictStrategy.abort);
   }

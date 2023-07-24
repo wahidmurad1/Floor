@@ -28,9 +28,15 @@ class HomeScreen extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 30),
                 child: ListTile(
-                  leading: connectionCheckController.isConnected.value
-                      ? Image.network(product.image)
-                      : SizedBox(),
+                  leading: Image.network(
+                    product.image,
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace? stackTrace) {
+                      return SizedBox(
+                        child: Image.asset('assets/image/network_error.webp'),
+                      );
+                    },
+                  ),
                   title: Text(product.title),
                   trailing: Text('\$${product.price.toStringAsFixed(2)}'),
                 ),
